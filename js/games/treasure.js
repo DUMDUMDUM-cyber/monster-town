@@ -12,7 +12,9 @@ import { act, stopAct, offLeft } from '../acts.js';
 import { ACC, ACC_BY, accSVG } from '../acc.js';
 import * as S from '../store.js';
 
-const G = 560; // top of the sand path
+// Everything sits high enough that the tray stays well above the bottom edge of phones.
+const G = 470; // top of the sand path
+const SAND = G + 132; // bottom of the sand
 const CH_W = 92;
 const CH_H = CH_W * 1.2;
 const FOOT = CH_H * (233 / 240);
@@ -20,8 +22,8 @@ const START_X = 70;
 const CHEST_X = 1124;
 const PX0 = 130;
 const PX1 = 1034;
-const TRAY_TOP = 700;
-const TRAY_FLOOR = 786;
+const TRAY_TOP = SAND + 6; // keep in step with .tr-tray in style.css
+const TRAY_FLOOR = TRAY_TOP + 86;
 
 // Obstacle sizes (before squeezing them to fit the screen).
 const BODY = { gap: { s: 100, l: 160 }, wide: 240, cliff: 110, step: 130, key: 120 };
@@ -35,6 +37,8 @@ const BALLOON = [70, 120];
 
 const P = (c, w = 2.2) => `fill="${grad(c)}" stroke="${lineOf(c)}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
 const L = (c, w = 2.2) => `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+// Shared soft gradients are links like url(#mlgRRGGBB); swap them for the plain colour.
+const flat = (svg) => svg.replace(/url\(#ml[gu]([0-9a-fA-F]{6})\)/g, '#$1');
 const box = (w, hh, inner) => `<svg viewBox="0 0 ${w} ${hh}" width="100%" height="100%" aria-hidden="true" style="overflow:visible">${inner}</svg>`;
 
 // ---------------------------------------------------------------- tool pictures
@@ -171,11 +175,11 @@ async function chest(ctx) {
     if (o.kind === 'gap' || o.kind === 'wide') { solid.push([from, o.x0]); from = o.x1; }
   }
   solid.push([from, 1220]);
-  let art = solid.map(([a, b]) => `<path d="M${a} ${G + 4} Q${a} ${G - 2} ${a + 6} ${G - 2} H${b - 6} Q${b} ${G - 2} ${b} ${G + 4} V692 H${a} Z" ${P('#F3D7A0', 3)}/>`
+  let art = solid.map(([a, b]) => `<path d="M${a} ${G + 4} Q${a} ${G - 2} ${a + 6} ${G - 2} H${b - 6} Q${b} ${G - 2} ${b} ${G + 4} V${SAND} H${a} Z" ${P('#F3D7A0', 3)}/>`
     + `<path d="M${a + 4} ${G + 10} H${b - 4}" ${L('#FFF2D6', 4)} opacity=".7"/>`).join('');
   for (let k = 0; k < 18; k++) {
     const sx = 30 + ((k * 211) % 1150);
-    if (solid.some(([a, b]) => sx > a + 10 && sx < b - 10)) art += `<path d="M${sx} ${612 + ((k * 37) % 60)} q5 -6 10 0" ${L('#D9B57A', 3)}/>`;
+    if (solid.some(([a, b]) => sx > a + 10 && sx < b - 10)) art += `<path d="M${sx} ${G + 52 + ((k * 37) % 60)} q5 -6 10 0" ${L('#D9B57A', 3)}/>`;
   }
   for (const o of obs) {
     if (o.kind === 'gap') {
@@ -195,7 +199,11 @@ async function chest(ctx) {
   scene.append(h('div', { class: 'tr-tray' }));
   const chestEl = h('div', { class: 'tr-chest', style: { width: '150px', height: '90px' } });
   const keyOb = obs.find((o) => o.kind === 'key');
-  const drawChest = (open, locked) => { chestEl.innerHTML = chestSVG({ open, locked }); };
+  // Flat colours (no links to shared gradients) and the shadow drawn in, so nothing depends on
+  // effects that iOS Safari can lose.
+  const drawChest = (open, locked) => {
+    chestEl.innerHTML = flat(chestSVG({ open, locked }).replace('style="overflow:visible">', 'style="overflow:visible"><ellipse cx="100" cy="112" rx="66" ry="7" fill="#5A3E22" opacity=".22"/>'));
+  };
   drawChest(false, !!keyOb);
   scene.append(chestEl);
   chestEl.style.left = CHEST_X - 75 + 'px';
@@ -206,9 +214,10 @@ async function chest(ctx) {
     keyEl.style.left = (keyOb.x0 + keyOb.x1) / 2 - 28 + 'px';
     keyEl.style.top = G - keyOb.h - 40 + 'px';
     keyEl.style.opacity = '1';
+    keyEl.firstChild.classList.add('bob');
   };
   if (keyOb) {
-    keyEl = h('div', { class: 'tr-key bob', html: keyArt(), style: { width: '56px', height: '30px' } });
+    keyEl = h('div', { class: 'tr-key', style: { width: '56px', height: '30px' } }, h('div', { class: 'tr-key-in bob', html: flat(keyArt()) }));
     scene.append(keyEl);
     keyHome();
   }
@@ -484,7 +493,7 @@ async function chest(ctx) {
             if (keyEl) {
               sfx.ting();
               haveKey = true;
-              keyEl.classList.remove('bob');
+              keyEl.firstChild.classList.remove('bob');
               keyEl.style.transition = 'none';
               followers.push({ el: keyEl, dx: -28, dy: -CH_H - 30 });
               setPos(pos.x, pos.y);
@@ -517,8 +526,8 @@ async function chest(ctx) {
     }
     await move(CHEST_X - 104, G);
     if (!haveKey) {
-      anim(chestEl, 'wiggle', 500);
-      return oops(chestEl);
+      anim(chestEl.firstChild, 'wiggle', 500);
+      return oops(chestEl.firstChild);
     }
     // Open it!
     if (keyEl) {
@@ -531,7 +540,7 @@ async function chest(ctx) {
     }
     sfx.yay();
     drawChest(true, false);
-    anim(chestEl, 'pop', 500);
+    anim(chestEl.firstChild, 'pop', 500);
     await prize();
     return true;
   }

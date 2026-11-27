@@ -121,6 +121,40 @@ export function setWear(who, slot, id) {
   save();
 }
 
+// One round per game per day (DESAIN.md 9): a finished game stays locked until the next day
+// (the date changes at midnight) or until a parent unlocks it. "lockDone: false" turns it off.
+function doneList() {
+  const k = todayKey();
+  if (data.doneDay !== k) {
+    data.doneDay = k;
+    data.done = [];
+    save();
+  }
+  return data.done || [];
+}
+export const lockOn = () => data.lockDone !== false;
+export const isLocked = (id) => lockOn() && doneList().includes(id);
+export function markDone(id) {
+  const list = doneList();
+  if (list.includes(id)) return;
+  data.done = [...list, id];
+  save();
+}
+export function unlockAll() {
+  doneList();
+  data.done = [];
+  save();
+}
+export const doneCount = () => doneList().length;
+
+// Bedtime (all games played): which monster was put to bed today.
+export const bedWho = () => (data.bedDay === todayKey() ? data.bedWho : null);
+export function setBed(who) {
+  data.bedDay = todayKey();
+  data.bedWho = who;
+  save();
+}
+
 export function resetProgress() {
   data.levels = {};
   data.plays = {};

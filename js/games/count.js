@@ -206,7 +206,7 @@ export default {
   art: 'count',
 
   startRound(ctx) {
-    ctx.setPlace('orchard');
+    ctx.setPlace('candy');
     ctx.round = { last: 0, shift: rand(0, 3) };
   },
 

@@ -208,6 +208,24 @@ const PHRASES = [
   [9, null, 7, null, 4, null, 7, null, 2, null, 4, null, 0, null, null, null],
 ];
 const BASS = [0, 0, 5, 7]; // C, C, F, G per phrase
+// Two tunes: the playful one, and a slow, soft lullaby for bedtime (one note every 3 steps).
+const TUNES = {
+  play: { step: STEP, phrases: PHRASES, bass: BASS, len: 1.8, vol: 0.09, wave: 'triangle' },
+  lullaby: {
+    step: 60 / 64 / 2,
+    phrases: [
+      [12, null, null, 9, null, null, 7, null, null, 9, null, null, 7, null, null, null],
+      [5, null, null, 7, null, null, 9, null, null, 7, null, null, 4, null, null, null],
+      [12, null, null, 14, null, null, 12, null, null, 9, null, null, 7, null, null, null],
+      [9, null, null, 7, null, null, 4, null, null, 2, null, null, 0, null, null, null],
+    ],
+    bass: [0, 5, 0, 7],
+    len: 3.4,
+    vol: 0.07,
+    wave: 'sine',
+  },
+};
+let tune = TUNES.play;
 
 function musicNote(freq, when, dur, vol, type) {
   const o = ctx.createOscillator();
@@ -225,12 +243,13 @@ function musicNote(freq, when, dur, vol, type) {
 
 function schedule() {
   while (nextTime < ctx.currentTime + 0.4) {
-    const phrase = Math.floor(step / 16) % PHRASES.length;
+    const T = tune;
+    const phrase = Math.floor(step / 16) % T.phrases.length;
     const s = step % 16;
-    const n = PHRASES[phrase][s];
-    if (n != null) musicNote(f(n), nextTime, STEP * 1.8, 0.09, 'triangle');
-    if (s % 4 === 0) musicNote(f(BASS[phrase] - 12), nextTime, STEP * 3.5, 0.08, 'sine');
-    nextTime += STEP;
+    const n = T.phrases[phrase][s];
+    if (n != null) musicNote(f(n), nextTime, T.step * T.len, T.vol, T.wave);
+    if (s % 4 === 0) musicNote(f(T.bass[phrase] - 12), nextTime, T.step * 3.5, 0.07, 'sine');
+    nextTime += T.step;
     step++;
   }
 }
@@ -240,8 +259,12 @@ function duck(on) {
   musicBus.gain.setTargetAtTime(on ? 0.12 : 0.45, ctx.currentTime, 0.15);
 }
 
-export function setMusic(on) {
+export function setMusic(on, kind = 'play') {
   if (!ctx) return;
+  if (TUNES[kind] !== tune) {
+    tune = TUNES[kind];
+    step = 0;
+  }
   musicOn = on;
   if (on) {
     if (!musicTimer) {

@@ -44,6 +44,34 @@ export const ACC = [
   { id: 'cowboy', slot: 'head', name: 'cowboy hat', vb: '30 -10 140 80', parts: (f) => ({ head: hat(f, `<ellipse cx="0" cy="8" rx="66" ry="13" ${P('#C08048', 2.4)}/><path d="M-32 6 Q-36 -42 -12 -40 Q0 -30 12 -40 Q36 -42 32 6 Q0 12 -32 6 Z" ${P('#C08048', 2.4)}/><path d="M-32 -2 Q0 6 32 -2" ${L('#7A4A2A', 6)}/>`) }) },
   { id: 'flowers', slot: 'head', name: 'flower crown', vb: '40 0 120 60', parts: (f) => ({ head: hat(f, `<path d="M-54 18 Q0 -6 54 18" ${L('#4E8F3E', 4)}/>${[[-50, 14, '#FF8FB1'], [-28, 4, '#FFF8EA'], [0, 0, '#CDB8EC'], [28, 4, '#FFE7A0'], [50, 14, '#FF8FB1']].map(([x, y, c]) => `<ellipse cx="${x + 10}" cy="${y + 6}" rx="8" ry="4" ${P('#7CC46A', 1.2)} transform="rotate(-20 ${x + 10} ${y + 6})"/>${flower(x, y, 7, c)}`).join('')}`) }) },
   { id: 'astro', slot: 'head', name: 'space helmet', vb: '40 -30 120 100', parts: (f) => ({ head: hat(f, `<path d="M-50 16 Q-52 -40 0 -42 Q52 -40 50 16 Q0 26 -50 16 Z" ${P('#F2F4FA', 2.4)}/><path d="M-48 4 Q0 14 48 4" ${L('#3A86FF', 7)}/><path d="M-30 -24 Q-20 -34 -6 -36" ${L('#FFFFFF', 5)} opacity=".8"/><path d="M0 -42 V-62" ${L('#8C92AA', 3)}/><circle cx="0" cy="-66" r="7" ${P('#EF476F', 1.8)}/>`) }) },
+  { id: 'bow', slot: 'head', name: 'hair bow', vb: '56 0 88 60', parts: (f) => ({ head: hat(f, `<path d="M0 0 L-32 -20 Q-40 0 -32 18 Z M0 0 L32 -20 Q40 0 32 18 Z" ${P('#FF6FA0', 2.4)}/><path d="M-24 -10 Q-28 0 -24 9 M24 -10 Q28 0 24 9" ${L('#FFC2D8', 2.6)}/><circle cx="0" cy="0" r="9" ${P('#E2457E', 2)}/>`) }) },
+  { id: 'beanie', slot: 'head', name: 'warm hat', vb: '40 -30 120 90', parts: (f) => ({ head: hat(f, `<path d="M-48 14 Q-50 -40 0 -42 Q50 -40 48 14 Z" ${P('#7BC4E8', 2.4)}/><rect x="-52" y="2" width="104" height="18" rx="9" ${P('#4E9CC8', 2.2)}/><path d="M-30 -24 V0 M-10 -32 V0 M10 -32 V0 M30 -24 V0" ${L('#A8DCF4', 3)}/><circle cx="0" cy="-48" r="12" ${P('#FFF8EE', 2)}/>`) }) },
+  { id: 'chef', slot: 'head', name: 'chef hat', vb: '44 -50 112 110', parts: (f) => ({ head: hat(f, `<rect x="-30" y="-16" width="60" height="30" rx="6" ${P('#FFFFFF', 2.4)}/><path d="M-30 -14 Q-56 -30 -38 -54 Q-26 -72 -6 -60 Q4 -80 24 -64 Q48 -66 44 -40 Q56 -24 30 -14 Z" ${P('#FFFFFF', 2.4)}/><path d="M-14 -14 V4 M0 -14 V6 M14 -14 V4" ${L('#D8D8E4', 2.4)}/>`) }) },
+  { id: 'bunny', slot: 'head', name: 'bunny ears', vb: '50 -60 100 120', parts: (f) => ({ head: hat(f, `<path d="M-40 14 Q-40 -6 40 14" ${L('#FF8FB1', 6)}/>${[-1, 1].map((s) => `<g transform="rotate(${s * 12})"><ellipse cx="${s * 16}" cy="-30" rx="13" ry="38" ${P('#FFFFFF', 2.4)}/><ellipse cx="${s * 16}" cy="-28" rx="6" ry="28" fill="#FFC2D8"/></g>`).join('')}`) }) },
+  { id: 'phones', slot: 'head', name: 'headphones', vb: '20 0 160 110', parts: (f) => ({ head: hat(f, `<path d="M-62 46 Q-66 -26 0 -28 Q66 -26 62 46" ${L('#5A4F7A', 9)}/>${[-1, 1].map((s) => `<rect x="${s * 66 - 13}" y="34" width="26" height="40" rx="12" ${P('#9B7BE0', 2.4)}/>`).join('')}`) }) },
+  // ---- eyes
+  { id: 'hearts', slot: 'eyes', name: 'heart glasses', vb: '66 78 68 48', parts: (f) => ({ eyes: `<path d="M${-f.eye + f.er - 2} -4 Q0 -10 ${f.eye - f.er + 2} -4" ${L('#E2457E', 4)}/>${lens(f, (x) => { const r = f.er; return `<path d="M${x} ${r * 0.9} C${x - r * 1.6} ${-r * 0.1} ${x - r * 0.9} ${-r * 1.2} ${x} ${-r * 0.45} C${x + r * 0.9} ${-r * 1.2} ${x + r * 1.6} ${-r * 0.1} ${x} ${r * 0.9} Z" fill="#FF8FB1" fill-opacity=".55" stroke="#E2457E" stroke-width="4" stroke-linejoin="round"/>`; })}` }) },
+  { id: 'mask', slot: 'eyes', name: 'hero mask', vb: '40 70 120 64', parts: (f) => {
+    const W = f.eye + f.er + 14;
+    const T = f.er + 12;
+    const hole = (x) => { const r = f.er * 0.92; return `M${x - r} 0 a${r} ${r} 0 1 0 ${2 * r} 0 a${r} ${r} 0 1 0 ${-2 * r} 0 Z`; };
+    return { eyes: `<path fill-rule="evenodd" d="M${-W} -6 Q${-f.eye} ${-T - 6} 0 -10 Q${f.eye} ${-T - 6} ${W} -6 Q${W - 2} ${T} ${f.eye} ${T - 2} Q0 ${T - 10} ${-f.eye} ${T - 2} Q${-W + 2} ${T} ${-W} -6 Z ${hole(-f.eye)} ${hole(f.eye)}" fill="#3A86FF" stroke="#2E5FC0" stroke-width="3" stroke-linejoin="round"/><path d="M${W - 2} -6 l16 -10 M${W - 2} -2 l18 2" ${L('#2E5FC0', 4)}/>` };
+  } },
+  // ---- neck
+  { id: 'medal', slot: 'neck', name: 'gold medal', vb: '50 130 100 90', parts: (f) => ({ neck: `<path d="M${-f.neck * 0.6} -14 L-6 26 M${f.neck * 0.6} -14 L6 26" ${L('#3A86FF', 7)}/><circle cx="0" cy="36" r="15" ${P('#FFCF4D', 2.4)}/><path d="${starD(0, 37, 8, 3.6)}" fill="#FFF3C4"/>` }) },
+  { id: 'tie', slot: 'neck', name: 'necktie', vb: '70 140 60 80', parts: () => ({ neck: `<path d="M-9 -8 H9 L5 4 H-5 Z" ${P('#06A06A', 2.2)}/><path d="M-5 4 H5 L12 40 L0 52 L-12 40 Z" ${P('#06C47E', 2.4)}/><path d="M-7 18 L8 12 M-9 32 L10 24" ${L('#B8F2D6', 3)}/>` }) },
+  { id: 'pearls', slot: 'neck', name: 'pearl necklace', vb: '36 140 128 60', parts: (f) => ({ neck: Array.from({ length: 11 }, (_, i) => {
+    const t = i / 10;
+    return `<circle cx="${(-f.neck + t * f.neck * 2).toFixed(1)}" cy="${(-8 + Math.sin(t * Math.PI) * 18).toFixed(1)}" r="5.5" ${P('#FFF8F0', 1.6)}/>`;
+  }).join('') }) },
+  // ---- other
+  { id: 'skates', slot: 'other', name: 'roller skates', vb: '50 190 100 60', parts: () => {
+    const sk = `<path d="M-12 -24 H12 V-6 Q22 -6 24 2 V8 H-22 V-4 Z" ${P('#9B7BE0', 2.4)}/><path d="M-22 8 H24" ${L('#5A4F7A', 4)}/><circle cx="-14" cy="16" r="6" ${P('#FFCF4D', 2)}/><circle cx="14" cy="16" r="6" ${P('#FFCF4D', 2)}/>`;
+    return { footL: sk, footR: sk };
+  } },
+  { id: 'guitar', slot: 'other', name: 'little guitar', vb: '110 50 120 150', parts: (f) => ({
+    back: `<g transform="translate(${f.side - 10} 0) rotate(28)"><rect x="-5" y="-78" width="10" height="56" rx="3" ${P('#A0663A', 2)}/><rect x="-9" y="-90" width="18" height="16" rx="4" ${P('#7A4A2A', 2)}/><path d="M-26 -14 Q-34 -30 -16 -32 Q0 -28 16 -32 Q34 -30 26 -14 Q38 14 0 26 Q-38 14 -26 -14 Z" ${P('#FF9542', 2.4)}/><circle cx="0" cy="-6" r="7" fill="#7A4A2A"/></g>`,
+  }) },
   // ---- eyes
   { id: 'shades', slot: 'eyes', name: 'sunglasses', vb: '68 82 64 40', parts: (f) => ({ eyes: `<path d="M${-f.eye + f.er - 4} -4 Q0 -10 ${f.eye - f.er + 4} -4" ${L('#2B2240', 4)}/>${lens(f, (x) => `<rect x="${x - f.er}" y="${-f.er * 0.75}" width="${f.er * 2}" height="${f.er * 1.5}" rx="${f.er * 0.6}" fill="#2B2240" fill-opacity=".9" stroke="#1A1428" stroke-width="2.4"/><path d="M${x - f.er * 0.55} ${-f.er * 0.3} L${x - f.er * 0.15} ${-f.er * 0.55}" ${L('#FFFFFF', 3)} opacity=".6"/>`)}` }) },
   { id: 'stars', slot: 'eyes', name: 'star glasses', vb: '66 78 68 48', parts: (f) => ({ eyes: `<path d="M${-f.eye + f.er - 2} -4 Q0 -10 ${f.eye - f.er + 2} -4" ${L('#E85DA0', 4)}/>${lens(f, (x) => `<path d="${starD(x, 1, f.er * 1.25, f.er * 0.72)}" fill="#FFD6EC" fill-opacity=".45" stroke="#E85DA0" stroke-width="4" stroke-linejoin="round"/>`)}` }) },

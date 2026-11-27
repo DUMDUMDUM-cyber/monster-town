@@ -409,6 +409,42 @@ export function picSVG(name, color) {
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" style="overflow:visible">${color ? fn(color) : fn()}</svg>`;
 }
 
+// ---------------------------------------------------------------- monster faces (Paket 5)
+// A monster's head with a feeling: happy, sad, angry, scared, surprised, tired, closed (eyes shut).
+const FACE_SKIN = { moko: ['#2EC4B6', '#137A71'], gumi: ['#A06CF0', '#6A44B0'], tobi: ['#FF9542', '#B8601E'] };
+export const FEELINGS = ['happy', 'sad', 'angry', 'scared', 'surprised', 'tired'];
+export function faceInner(feel, who = 'moko') {
+  const [c, ln] = FACE_SKIN[who];
+  const fur = `fill="${grad(c)}" stroke="${ln}" stroke-width="2.6" stroke-linejoin="round"`;
+  const top = {
+    moko: `<circle cx="20" cy="30" r="11" ${fur}/><circle cx="80" cy="30" r="11" ${fur}/><path d="M44 20 L50 2 L56 20 Z" fill="${grad('#FFD57A')}" stroke="#C99630" stroke-width="2.2" stroke-linejoin="round"/>`,
+    gumi: `<circle cx="22" cy="32" r="9" ${fur}/><circle cx="78" cy="32" r="9" ${fur}/><path d="M50 18 C46 8 58 2 61 11" ${L(ln, 3)}/>`,
+    tobi: `<ellipse cx="32" cy="16" rx="8" ry="20" ${fur} transform="rotate(-18 32 16)"/><ellipse cx="68" cy="16" rx="8" ry="20" ${fur} transform="rotate(18 68 16)"/>`,
+  }[who];
+  const eyeW = (x, r) => `<circle cx="${x}" cy="50" r="${r}" fill="#fff" stroke="${ln}" stroke-width="2"/>`;
+  const pup = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${PUPIL}"/><circle cx="${x + r * 0.35}" cy="${y - r * 0.4}" r="${r * 0.38}" fill="#fff"/>`;
+  const eyes = (r = 9, pr = 4.6, dy = 1) => eyeW(36, r) + eyeW(64, r) + pup(36, 50 + dy, pr) + pup(64, 50 + dy, pr);
+  const brow = (d) => `<path d="${d}" ${L(ln, 3.4)}/>`;
+  const mouthF = (d) => `<path d="${d}" fill="${MOUTH}" stroke="${MOUTH}" stroke-width="2" stroke-linejoin="round"/>`;
+  const cheeks = `<ellipse cx="22" cy="66" rx="7" ry="4.5" fill="${blush()}"/><ellipse cx="78" cy="66" rx="7" ry="4.5" fill="${blush()}"/>`;
+  let f = '';
+  if (feel === 'happy') f = eyes() + mouthF('M34 66 Q50 86 66 66 Q50 72 34 66 Z') + cheeks;
+  else if (feel === 'sad') f = eyes(9, 4.6, 3) + brow('M27 39 L43 34 M57 34 L73 39') + `<path d="M38 78 Q50 66 62 78" ${L(MOUTH, 3.4)}/><path d="M28 60 Q24 68 28 71 Q32 68 28 60 Z" fill="#7CC8F2" stroke="#3C8FC4" stroke-width="1.4"/>`;
+  else if (feel === 'angry') f = `<circle cx="50" cy="56" r="38" fill="#FF3B3B" opacity=".16"/>` + eyes(8.5, 4.4, 2) + brow('M26 35 L44 43 M56 43 L74 35') + `<path d="M36 76 Q50 66 64 76" ${L(MOUTH, 3.6)}/><path d="M84 22 q4 -5 0 -10 M90 26 q5 -4 2 -10" ${L('#9AA3B0', 2.6)}/>`;
+  else if (feel === 'scared') f = eyes(11, 3, 0) + brow('M26 36 Q34 29 44 33 M56 33 Q66 29 74 36') + `<path d="M35 75 q3.75 -5 7.5 0 t7.5 0 t7.5 0 t7.5 0" ${L(MOUTH, 3)}/><path d="M86 40 Q82 48 86 51 Q90 48 86 40 Z" fill="#9AD8F5" stroke="#3C8FC4" stroke-width="1.4"/>`;
+  else if (feel === 'surprised') f = eyes(11.5, 5, 0) + brow('M26 32 Q35 24 44 31 M56 31 Q65 24 74 32') + `<ellipse cx="50" cy="75" rx="7.5" ry="9.5" fill="${MOUTH}"/>`;
+  else if (feel === 'tired') f = eyes(9, 4.4, 4) + `<path d="M26.6 50 A9.4 9.4 0 0 1 45.4 50 Z M54.6 50 A9.4 9.4 0 0 1 73.4 50 Z" fill="${c}" stroke="${ln}" stroke-width="2"/><ellipse cx="50" cy="74" rx="5.5" ry="6.5" fill="${MOUTH}"/><text x="82" y="26" font-family="Fredoka, system-ui, sans-serif" font-size="16" font-weight="700" fill="#6A7BC4">z</text><text x="90" y="14" font-family="Fredoka, system-ui, sans-serif" font-size="12" font-weight="700" fill="#6A7BC4">z</text>`;
+  else f = `<path d="M28 50 Q36 57 44 50 M56 50 Q64 57 72 50" ${L(ln, 3.4)}/>` + mouthF('M40 68 Q50 78 60 68 Q50 71 40 68 Z') + cheeks;
+  return `${top}<circle cx="50" cy="56" r="38" ${fur}/><ellipse cx="50" cy="76" rx="22" ry="13" fill="#fff" opacity=".22"/>${f}`;
+}
+export const faceSVG = (feel, who) => `<svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" style="overflow:visible">${faceInner(feel, who)}</svg>`;
+
+// A picture placed inside a bigger drawing (x, y, size in the drawing's own units).
+export const picAt = (name, x, y, s, color) => picSVG(name, color).replace('width="100%" height="100%"', `x="${x}" y="${y}" width="${s}" height="${s}"`);
+// Fill and outline in the house style, for drawings made in the game files.
+export const paint = (c, w = 2.2) => `fill="${grad(c)}" stroke="${lineOf(c)}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+export const svg100 = (inner) => `<svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" style="overflow:visible">${inner}</svg>`;
+
 // ---------------------------------------------------------------- shapes
 function starPath(cx, cy, R, r) {
   let d = '';
@@ -449,6 +485,7 @@ const IC = {
   replay: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
+  next: '<path d="M9 5l7 7-7 7"/>',
   play: '<path d="M8 5v14l11-7z" fill="currentColor"/>',
   check: '<path d="M5 12l5 5 9-10"/>',
   hanger: '<path d="M10 6a2 2 0 1 1 2 2v2"/><path d="M12 10 3 17.5h18z"/>',
@@ -465,16 +502,54 @@ const rng = (seed) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const range = (n) => Array.from({ length: n }, (_, i) => i);
 const timing = (i, base, spread) => `animation-duration:${(base + ((i * 0.37) % 1) * spread).toFixed(2)}s;animation-delay:${(-((i * 0.61) % 1) * base).toFixed(2)}s`;
 
+// ---------------------------------------------------------------- moods (DESAIN.md 11.3)
+// Outdoor places change with the time of day (morning, day, evening, night) and sometimes the
+// weather (snow, rainbow, falling petals). Indoor places get a softer light and window. The
+// mood is set by placeSVG() just before a place is drawn.
+let MOOD = { time: 'day', weather: null, kind: 'none' };
+const OUT = new Set(['sky', 'choose', 'farm', 'orchard', 'park', 'country', 'beach', 'forest', 'candy']);
+const IN = new Set(['kitchen', 'playroom', 'mirror', 'table', 'baskets']);
+export function clockMood(d = new Date()) {
+  const t = d.getHours() + d.getMinutes() / 60;
+  return { time: t < 6 ? 'night' : t < 10 ? 'morning' : t < 16 ? 'day' : t < 18.5 ? 'evening' : 'night', weather: null };
+}
+export function randomMood() {
+  const r = Math.random();
+  const time = r < 0.35 ? 'day' : r < 0.55 ? 'morning' : r < 0.8 ? 'evening' : 'night';
+  const w = Math.random();
+  const weather = w < 0.12 ? 'snow' : time !== 'night' && w < 0.27 ? 'rainbow' : time !== 'night' && w < 0.39 ? 'petals' : null;
+  return { time, weather };
+}
+const SKIES = {
+  day: [[0, '#9CCFE8'], [0.5, '#CFE6EE'], [0.78, '#F7EBD3']],
+  morning: [[0, '#B4D6EE'], [0.45, '#F4DCDC'], [0.78, '#FCE6C4']],
+  evening: [[0, '#8C8FD0'], [0.42, '#E7A6BC'], [0.75, '#FFC995']],
+  night: [[0, '#1E2350'], [0.6, '#363C74'], [1, '#56578C']],
+};
+const CLOUD_C = {
+  day: ['#FFFFFF', '#E4ECF1', '#B7C8D5'], morning: ['#FFF8F2', '#F2DCE0', '#E2C3CB'],
+  evening: ['#FFE6DA', '#EDB6C4', '#D395A6'], night: ['#646BA0', '#4A5088', '#383E72'],
+};
+const GLASS = { day: ['#A9D6EC', '#E6F3F4'], morning: ['#F4D8D2', '#E6F0F4'], evening: ['#F4A98A', '#FBD9B0'], night: ['#232B5A', '#465089'] };
+const TINT = { morning: ['#FFD6BE', 0.22, 0.12], evening: ['#F08264', 0.24, 0.14], night: ['#1C2254', 0.56, 0.3] };
+// The colour wash over the land (outdoors: only below the sky; indoors: everywhere), as an SVG
+// gradient for the wide backdrop behind the stage.
+const tintGrad = (t, k) => {
+  const [c, out, inn] = TINT[t];
+  const list = k === 'out' ? [[0, c, 0], [0.32, c, 0], [0.62, c, out]] : [[0, c, inn], [1, c, inn]];
+  return lin(`ml-tint-${k}-${t}`, list, 'gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="800"');
+};
+
 const G = {
-  sky: () => lin('ml-sky', [[0, '#9CCFE8'], [0.5, '#CFE6EE'], [0.78, '#F7EBD3']]),
+  sky: () => lin(`ml-sky-${MOOD.time}`, SKIES[MOOD.time]),
   far: () => lin('ml-far', [[0, '#C9DFBD'], [0.45, '#AFCCA2']]),
   mid: () => lin('ml-mid', [[0, '#B2D693'], [0.4, '#8CBE72']]),
   ground: () => lin('ml-ground', [[0, '#A2CF7C'], [0.7, '#76AC5C']]),
-  cloud: () => lin('ml-cloud', [[0, '#FFFFFF'], [1, '#E4ECF1']], 'gradientUnits="userSpaceOnUse" x1="0" y1="-62" x2="0" y2="34"'),
+  cloud: () => lin(`ml-cloud-${MOOD.time}`, [[0, CLOUD_C[MOOD.time][0]], [1, CLOUD_C[MOOD.time][1]]], 'gradientUnits="userSpaceOnUse" x1="0" y1="-62" x2="0" y2="34"'),
   canopy: () => rad('ml-canopy', [[0, '#A9D886'], [1, '#5C9A4A']], 'gradientUnits="userSpaceOnUse" cx="-24" cy="-80" r="150"'),
   trunk: () => lin('ml-trunk', [[0, '#A57651'], [1, '#76492E']], 'x1="0" y1="0" x2="1" y2="0"'),
   sunglow: () => rad('ml-sunglow', [[0, '#FFF4CF', 0.95], [0.45, '#FFF0C2', 0.5], [1, '#FFF0C2', 0]]),
-  glass: () => lin('ml-glass', [[0, '#A9D6EC'], [1, '#E6F3F4']]),
+  glass: () => lin(`ml-glass-${MOOD.time}`, [[0, GLASS[MOOD.time][0]], [1, GLASS[MOOD.time][1]]]),
   wood: () => lin('ml-wood', [[0, '#EFC994'], [1, '#D6A26A']]),
 };
 
@@ -509,10 +584,36 @@ function strokes(seed, n, x0, x1, y0, y1, color, o = 0.55, d = 'q4 -9 9 -12') {
 
 const CLOUD = [[0, 4, 30], [40, -18, 44], [86, -10, 38], [120, 10, 24]];
 const cloudShape = (f, extra = '') => CLOUD.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" ${extra}/>`).join('') + `<rect x="0" y="4" width="120" height="30" fill="${f}" ${extra}/>`;
-const cloud = (x, y, s, i) => `<g transform="translate(${x} ${y}) scale(${s})"><g class="drift" style="${timing(i, 24, 14)}">${cloudShape(G.cloud(), 'stroke="#B7C8D5" stroke-width="6"')}${cloudShape(G.cloud())}</g></g>`;
+const cloud = (x, y, s, i) => `<g transform="translate(${x} ${y}) scale(${s})"><g class="drift" style="${timing(i, 24, 14)}"${MOOD.time === 'night' ? ' opacity=".8"' : ''}>${cloudShape(G.cloud(), `stroke="${CLOUD_C[MOOD.time][2]}" stroke-width="6"`)}${cloudShape(G.cloud())}</g></g>`;
 const CLOUDS = [[150, 112, 1.05], [520, 72, 0.7], [760, 196, 0.6], [330, 228, 0.5]];
 
 const sun = (x, y) => `<circle class="glow" cx="${x}" cy="${y}" r="170" fill="${G.sunglow()}"/><circle cx="${x}" cy="${y}" r="62" fill="#FFDB80" stroke="#E8B04F" stroke-width="3"/><circle cx="${x - 10}" cy="${y - 10}" r="40" fill="#FFE7A6"/>`;
+const sunAs = (id, x, y, r, [c, ln, hi], glow) => `<circle class="glow" cx="${x}" cy="${y}" r="${r * 2.8}" fill="${rad(id, [[0, glow, 0.9], [0.45, glow, 0.45], [1, glow, 0]])}"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="${ln}" stroke-width="3"/><circle cx="${x - r * 0.16}" cy="${y - r * 0.16}" r="${r * 0.64}" fill="${hi}"/>`;
+const moon = (x, y) => `<circle class="glow" cx="${x}" cy="${y}" r="150" fill="${rad('ml-moonglow', [[0, '#FFF4CF', 0.55], [0.5, '#FFF0C2', 0.18], [1, '#FFF0C2', 0]])}"/><circle cx="${x}" cy="${y}" r="58" fill="${grad('#FFE9A8')}" stroke="#E0C177" stroke-width="3"/><circle cx="${x - 20}" cy="${y - 15}" r="11" fill="#F1D58C" opacity=".7"/><circle cx="${x + 18}" cy="${y + 20}" r="8" fill="#F1D58C" opacity=".7"/><circle cx="${x + 15}" cy="${y - 25}" r="5" fill="#F1D58C" opacity=".7"/>`;
+const twinkleStar = (x, y, s, k) => `<path class="twinkle" style="${timing(k, 2.6, 1.6)}" d="M${x} ${y - s} L${x + s * 0.3} ${y - s * 0.3} L${x + s} ${y} L${x + s * 0.3} ${y + s * 0.3} L${x} ${y + s} L${x - s * 0.3} ${y + s * 0.3} L${x - s} ${y} L${x - s * 0.3} ${y - s * 0.3} Z" fill="#FFE9A8"/>`;
+function starField(seed, n, x0, x1, y0, y1) {
+  const r = rng(seed);
+  let s = '';
+  for (let k = 0; k < n; k++) {
+    const x = (x0 + r() * (x1 - x0)).toFixed(0);
+    const y = (y0 + r() * (y1 - y0)).toFixed(0);
+    s += k % 3 ? `<circle class="twinkle" style="${timing(k, 3, 2)}" cx="${x}" cy="${y}" r="${(1.6 + r() * 1.6).toFixed(1)}" fill="#FFF6DA"/>` : twinkleStar(+x, +y, 6 + (k % 4) * 2, k);
+  }
+  return s;
+}
+// Sun, low sun, setting sun or moon and stars: whatever the mood puts in the sky.
+// horizon: where the far hills start, so a low sun stays in the sky.
+function skyBody(x, y, horizon = 470) {
+  const t = MOOD.time;
+  if (t === 'morning') return sunAs('ml-sun-m', x - 60, Math.min(y + 80, horizon - 80), 56, ['#FFD7A0', '#E9A86A', '#FFE8C4'], '#FFE6CC');
+  if (t === 'evening') return sunAs('ml-sun-e', x - 30, Math.min(y + 170, horizon - 90), 72, ['#FF9E6A', '#DC6E48', '#FFBE8A'], '#FFB98A');
+  if (t === 'night') return starField(91, 34, 20, 1180, 20, horizon - 90) + moon(x, y);
+  return sun(x, y);
+}
+// Things in the sky behind everything else (static): a soft rainbow.
+const skyBack = () => (MOOD.weather === 'rainbow'
+  ? `<g opacity=".42">${['#F49AA8', '#F9C38C', '#F8E38F', '#A8DD9A', '#93C8EE', '#B9A4E6'].map((c, k) => { const r = 540 - k * 21; return `<path d="M${600 - r} 660 A${r} ${r * 0.92} 0 0 1 ${600 + r} 660" fill="none" stroke="${c}" stroke-width="22"/>`; }).join('')}</g>`
+  : '');
 
 const CANOPY = [[0, -64, 52], [-46, -30, 42], [46, -32, 44], [0, -14, 48]];
 const canopyShape = (f, extra = '') => CANOPY.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" ${extra}/>`).join('');
@@ -583,7 +684,7 @@ function windowLive(id, x, y, w, h, curtain = '#F5A9BC') {
     return `<g transform="translate(${tx} ${y - 12}) scale(${side < 0 ? 1 : -1} 1)"><g class="curtain" style="${timing(side < 0 ? 1 : 2, 6, 2)}">${inner}</g></g>`;
   };
   return `<rect x="${x - 18}" y="${y + h - 2}" width="${w + 36}" height="16" rx="5" ${P('#D9A066', 2.5)}/>`
-    + `<g clip-path="${clip}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${G.glass()}"/>${cloud(x + w * 0.12, y + h * 0.36, 0.42, 3)}${cloud(x + w * 0.55, y + h * 0.7, 0.32, 5)}</g>`
+    + `<g clip-path="${clip}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${G.glass()}"/>${MOOD.time === 'night' ? starField(id.length * 7, 9, x + 8, x + w - 8, y + 8, y + h - 8) + `<circle cx="${x + w * 0.74}" cy="${y + h * 0.3}" r="18" fill="${grad('#FFE9A8')}"/>` : ''}${cloud(x + w * 0.12, y + h * 0.36, 0.42, 3)}${cloud(x + w * 0.55, y + h * 0.7, 0.32, 5)}</g>`
     + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="none" stroke="${grad('#C8925E')}" stroke-width="12"/>`
     + `<path d="M${x + w / 2} ${y} V${y + h} M${x} ${y + h / 2} H${x + w}" stroke="#B88352" stroke-width="8"/>`
     + `<rect x="${x - 50}" y="${y - 22}" width="${w + 100}" height="9" rx="4.5" fill="#9A6B45"/>${hang(-1)}${hang(1)}`;
@@ -607,7 +708,32 @@ function plant(x, y, s, i, pot = '#D9825B') {
 const SHADES = ['#F5A9BC', '#FFE7A0', '#A9D6EC', '#B9E3A0', '#CDB8EC', '#FFC9A0'];
 
 const VB = 'viewBox="0 0 1200 800" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"';
-const scene = (still, live, paper = '') => `<svg class="bg-static" ${VB}>${still}</svg><svg class="bg-live" ${VB}>${live}</svg><div class="bg-paper ${paper}"></div>`;
+// Each place also gets the mood: a colour wash (a div over the stage, and the same wash baked
+// into the wide backdrop) and the weather layer on top.
+function scene(still, live, paper = '') {
+  const { time: t, kind: k } = MOOD;
+  const wash = k !== 'none' && t !== 'day';
+  const bd = wash ? `<rect x="-10" y="-300" width="1220" height="1400" fill="${tintGrad(t, k)}" class="tint-bd"/>` : '';
+  return `<svg class="bg-static" ${VB}>${still}${bd}</svg><svg class="bg-live" ${VB}>${live}</svg>`
+    + (wash ? `<div class="bg-tint ${k} t-${t}"></div>` : '') + weather() + `<div class="bg-paper ${paper}"></div>`;
+}
+
+// Falling snow or petals, and fireflies at night (outdoors only).
+function weather() {
+  if (MOOD.kind !== 'out') return '';
+  const r = rng(101);
+  let s = '';
+  if (MOOD.weather === 'snow') {
+    for (let k = 0; k < 44; k++) s += `<g transform="translate(${(r() * 1200).toFixed(0)} 0)"><circle class="snow" r="${(2.5 + r() * 4).toFixed(1)}" fill="#FFFFFF" opacity="${(0.7 + r() * 0.3).toFixed(2)}" style="animation-duration:${(11 + r() * 9).toFixed(1)}s;animation-delay:${(-r() * 20).toFixed(1)}s"/></g>`;
+  } else if (MOOD.weather === 'petals') {
+    for (let k = 0; k < 20; k++) s += `<g transform="translate(${(r() * 1200).toFixed(0)} 0)"><ellipse class="petal" rx="7" ry="4" fill="${k % 3 ? '#F8BCCB' : '#FFE2EA'}" stroke="#E496AA" stroke-width="1.2" style="animation-duration:${(13 + r() * 9).toFixed(1)}s;animation-delay:${(-r() * 22).toFixed(1)}s"/></g>`;
+  }
+  if (MOOD.time === 'night') {
+    const glow = rad('ml-firefly', [[0, '#FFF6A8', 0.9], [0.4, '#FFE97A', 0.35], [1, '#FFE97A', 0]]);
+    for (let k = 0; k < 12; k++) s += `<g transform="translate(${(40 + r() * 1120).toFixed(0)} ${(440 + r() * 340).toFixed(0)})"><g class="firefly" style="animation-duration:${(7 + r() * 6).toFixed(1)}s;animation-delay:${(-r() * 12).toFixed(1)}s"><circle r="14" fill="${glow}"/><circle r="3" fill="#FFF8C8"/></g></g>`;
+  }
+  return s ? `<svg class="bg-weather" ${VB}>${s}</svg>` : '';
+}
 
 // Outdoor meadow shared by several places.
 function meadow(o = {}) {
@@ -616,20 +742,24 @@ function meadow(o = {}) {
   const mid = hill(o.mid || 560, 26, seed + 2);
   const gy = o.ground || 652;
   const ground = hill(gy, 12, seed + 4);
-  const still = `<rect width="1200" height="800" fill="${G.sky()}"/><g filter="${rough()}">`
-    + `<path d="${far.d}" fill="${G.far()}" stroke="#97B58A" stroke-width="3"/>`
-    + (o.farTrees || [[300, 0.42], [770, 0.5]]).map(([x, s]) => farTree(x, far.at(x) + 10, s)).join('')
-    + `<path d="${mid.d}" fill="${G.mid()}" stroke="#6E9E58" stroke-width="3"/>`
-    + strokes(seed + 6, 18, 0, 1200, (o.mid || 560) + 24, (o.mid || 560) + 70, '#6E9E58', 0.45, 'q6 -6 12 -6')
+  // pal: other colours for the hills (candy land, forest); default is the green meadow.
+  const p = o.pal || {};
+  const fill = (k, def) => (p[k] ? lin(`ml-${k}-${o.id}`, [[0, p[k][0]], [0.45, p[k][1]]]) : def);
+  const still = `<rect width="1200" height="800" fill="${G.sky()}"/>${skyBack()}<g filter="${rough()}">`
+    + `<path d="${far.d}" fill="${fill('far', G.far())}" stroke="${p.far ? p.far[2] : '#97B58A'}" stroke-width="3"/>`
+    + (o.farTrees || [[300, 0.42], [770, 0.5]]).map(([x, s], k) => farTree(x, far.at(x) + 10, s, ...(p.ftree ? p.ftree[k % p.ftree.length] : []))).join('')
+    + `<path d="${mid.d}" fill="${fill('mid', G.mid())}" stroke="${p.mid ? p.mid[2] : '#6E9E58'}" stroke-width="3"/>`
+    + strokes(seed + 6, 18, 0, 1200, (o.mid || 560) + 24, (o.mid || 560) + 70, p.mid ? p.mid[2] : '#6E9E58', 0.45, 'q6 -6 12 -6')
     + (o.midExtra ? o.midExtra(mid.at) : '')
-    + `<path d="${ground.d}" fill="${G.ground()}" stroke="#5E9147" stroke-width="3"/>`
-    + strokes(seed + 8, 46, 0, 1200, gy + 18, 798, '#5E9147')
+    + `<path d="${ground.d}" fill="${fill('ground', G.ground())}" stroke="${p.ground ? p.ground[2] : '#5E9147'}" stroke-width="3"/>`
+    + strokes(seed + 8, 46, 0, 1200, gy + 18, 798, p.ground ? p.ground[2] : '#5E9147')
     + (o.groundExtra || '') + `</g>${o.stillTop || ''}`;
-  const live = (o.sun === false ? '' : sun(...(o.sun || [1010, 140])))
+  const night = MOOD.time === 'night';
+  const live = (o.sun === false ? '' : skyBody(...(o.sun || [1010, 140]), o.far || 470))
     + (o.clouds || CLOUDS).map(([x, y, s], i) => cloud(x, y, s, i)).join('')
     + (o.trees || []).map(([x, y, s, apples], i) => tree(x, y, s, i, { apples })).join('')
     + tufts(o.tufts || TUFTS) + flowers(o.flowers || FLOWERS, 3) + (o.live || '')
-    + butterfly(o.bfly || 600) + motes(seed, 14, 10, 1190, 560, 780);
+    + (night ? '' : butterfly(o.bfly || 600, 0, ...(o.bflyC || []))) + motes(seed, 14, 10, 1190, 560, 780, night ? '#FFF3A8' : '#FFF8DC');
   return scene(still, live);
 }
 
@@ -792,13 +922,13 @@ const PLACE = {
     const sea = lin('ml-sea', [[0, '#8FD0E6'], [0.35, '#5DB3D6'], [1, '#2F86B8']]);
     const far = `<path d="M60 336 Q140 286 230 300 Q300 290 360 336 Z" fill="${lin('ml-isle', [[0, '#B9D9A0'], [1, '#93BE7C']])}" stroke="#7FA86A" stroke-width="3"/>`
       + `<path d="M190 300 Q186 262 196 238" ${L('#9A7652', 5)}/><path d="M196 238 q-26 -6 -40 8 M196 238 q-18 -20 -40 -18 M196 238 q16 -22 40 -16 M196 238 q26 0 36 16" ${L('#6E9E58', 5)}/>`;
-    const still = `<rect width="1200" height="800" fill="${G.sky()}"/><g filter="${rough()}">${far}`
+    const still = `<rect width="1200" height="800" fill="${G.sky()}"/>${skyBack()}<g filter="${rough()}">${far}`
       + `<path d="M900 336 Q960 318 1030 324 Q1090 318 1140 336 Z" fill="#B9D9A0" stroke="#7FA86A" stroke-width="3" opacity=".8"/>`
       + `<rect x="-10" y="332" width="1220" height="480" fill="${sea}"/>`
       + strokes(83, 26, 0, 1200, 360, 780, '#BFE6F5', 0.55, 'q10 -6 20 0 t20 0') + '</g>';
     const waves = range(6).map((k) => `<g transform="translate(${(k * 211) % 1200} ${380 + k * 64})"><g class="wave" style="${timing(k, 5, 2)}"><path d="M0 0 q14 -9 28 0 t28 0 t28 0" ${L('#FFFFFF', 3.4)} opacity=".6"/></g></g>`).join('');
     const gull = (x, y, k) => `<g transform="translate(${x} ${y})"><g class="bfly-y" style="${timing(k, 5, 2)}"><path d="M-16 0 q8 -10 16 0 q8 -10 16 0" ${L('#5A5468', 3)}/></g></g>`;
-    const live = sun(1040, 120) + CLOUDS.slice(0, 3).map(([x, y, s], i) => cloud(x, y - 20, s * 0.8, i)).join('') + waves + gull(640, 150, 1) + gull(700, 190, 2) + gull(420, 110, 3);
+    const live = skyBody(1040, 120, 330) + CLOUDS.slice(0, 3).map(([x, y, s], i) => cloud(x, y - 20, s * 0.8, i)).join('') + waves + gull(640, 150, 1) + gull(700, 190, 2) + gull(420, 110, 3);
     return scene(still, live);
   },
   // Race: a park with a three-lane running track.
@@ -820,12 +950,104 @@ const PLACE = {
       + range(12).map((r) => range(2).map((c) => `<rect x="${1066 + c * 14}" y="${456 + r * 29}" width="14" height="29" fill="${(r + c) % 2 ? '#3A3A48' : '#FFFFFF'}"/>`).join('')).join(''),
   }),
 };
+// ---------------------------------------------------------------- Paket 6: four new worlds
+const fishArt = (c, s) => `<g transform="scale(${s})"><path d="M-30 0 L-46 -14 L-44 0 L-46 14 Z" ${P(shade(c, 0.9), 2.2)}/><ellipse cx="0" cy="0" rx="32" ry="20" ${P(c, 2.4)}/><path d="M-6 -18 Q2 -30 14 -18" ${P(shade(c, 0.9), 2)}/><path d="M-10 -14 Q-4 0 -10 14" ${L(shade(c, 0.8), 2.4)}/><circle cx="16" cy="-4" r="5" fill="#fff" stroke="${lineOf(c)}" stroke-width="1.6"/><circle cx="17" cy="-4" r="2.6" fill="#2B2240"/><path d="M24 7 Q28 9 30 6" ${L(lineOf(c), 2)}/></g>`;
+const swimmer = (y, art, k, dur) => `<g class="swim" style="animation-duration:${dur}s;animation-delay:${-k * dur * 0.37}s"><g transform="translate(0 ${y})"><g class="bfly-y" style="animation-duration:${3 + (k % 3)}s">${art}</g></g></g>`;
+const coral = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 V-64 M0 -26 Q-22 -34 -28 -74 M0 -44 Q20 -52 26 -92 M-16 -48 Q-30 -54 -40 -50 M14 -66 Q28 -70 36 -64" ${L(lineOf(c), 17)}/><path d="M0 0 V-64 M0 -26 Q-22 -34 -28 -74 M0 -44 Q20 -52 26 -92 M-16 -48 Q-30 -54 -40 -50 M14 -66 Q28 -70 36 -64" ${L(c, 11)}/></g>`;
+const weed = (x, y, h, k) => `<g transform="translate(${x} ${y})"><g class="sway" style="${timing(k, 4.2, 2)}"><path d="M0 0 Q-16 ${-h * 0.25} 0 ${-h * 0.5} Q16 ${-h * 0.75} 0 ${-h}" ${L('#3F8E5A', 12)}/><path d="M0 0 Q-16 ${-h * 0.25} 0 ${-h * 0.5} Q16 ${-h * 0.75} 0 ${-h}" ${L('#6CC48A', 6)}/></g></g>`;
+const starfish = (x, y, r, c) => `<path d="${starPath(x, y, r, r * 0.45)}" ${P(c, 2.2)}/>`;
+const mush = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="2" rx="26" ry="6" fill="#2F5A26" opacity=".2"/><path d="M-9 0 Q-11 -22 -8 -30 H8 Q11 -22 9 0 Z" ${P('#FFF4E2', 2.4)}/><path d="M-34 -26 Q-30 -64 0 -64 Q30 -64 34 -26 Q0 -18 -34 -26 Z" ${P(c, 2.6)}/><circle cx="-14" cy="-44" r="5" fill="#fff" opacity=".9"/><circle cx="8" cy="-52" r="4" fill="#fff" opacity=".9"/><circle cx="18" cy="-36" r="3.5" fill="#fff" opacity=".9"/></g>`;
+const lolly = (c1, c2) => `<path d="M0 0 V-120" ${L('#F2E6D2', 8)}/><path d="M0 0 V-120" stroke="#D9C7A8" stroke-width="8" stroke-dasharray="2 14" fill="none"/><circle cx="0" cy="-150" r="40" ${P(c1, 3)}/><path d="M0 -150 m0 -6 a6 6 0 1 1 -6 6 a12 12 0 1 1 12 12 a18 18 0 1 1 -18 -18 a24 24 0 1 1 24 24 a30 30 0 1 1 -30 -30" fill="none" stroke="${c2}" stroke-width="6" stroke-linecap="round"/><ellipse cx="-14" cy="-166" rx="9" ry="5" fill="#fff" opacity=".55" transform="rotate(-30 -14 -166)"/>`;
+const cane = (x, y, s, flip) => `<g transform="translate(${x} ${y}) scale(${flip ? -s : s} ${s})"><path d="M0 0 V-80 Q0 -104 22 -104 Q44 -104 44 -84" ${L('#C24A55', 18)}/><path d="M0 0 V-80 Q0 -104 22 -104 Q44 -104 44 -84" ${L('#FFFFFF', 13)}/><path d="M0 0 V-80 Q0 -104 22 -104 Q44 -104 44 -84" stroke="#EF5D6C" stroke-width="13" stroke-dasharray="10 10" fill="none"/></g>`;
+const gumdrop = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-24 0 Q-26 -40 0 -42 Q26 -40 24 0 Z" ${P(c, 2.6)}/>${[[-10, -26], [6, -32], [12, -14], [-4, -12]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="2.4" fill="#fff" opacity=".75"/>`).join('')}</g>`;
+const rocket = `<g transform="rotate(90)"><path class="flame" d="M-9 38 Q0 70 9 38 Z" fill="#FFB547"/><path d="M-6 38 Q0 56 6 38 Z" fill="#FFF1A8"/><path d="M-16 20 L-30 40 L-14 36 Z M16 20 L30 40 L14 36 Z" ${P('#EF5D6C', 2.2)}/><path d="M0 -44 Q20 -20 16 38 H-16 Q-20 -20 0 -44 Z" ${P('#F4F2FB', 2.6)}/><path d="M0 -44 Q11 -32 14 -20 H-14 Q-11 -32 0 -44 Z" ${P('#EF5D6C', 2.2)}/><circle cx="0" cy="4" r="8" fill="${grad('#8FD0F2')}" stroke="#7D8AA6" stroke-width="2.4"/></g>`;
+
+Object.assign(PLACE, {
+  sea: () => {
+    const water = lin('ml-water', [[0, '#A6E3EE'], [0.4, '#62BBDA'], [1, '#2F7FB3']]);
+    const reef = hill(560, 30, 117);
+    const sand = hill(664, 14, 113);
+    const rays = [[140, 260], [420, 520], [760, 860], [1000, 1120]].map(([a, b]) => `<path d="M${a} -10 L${b} -10 L${b + 160} 820 L${a + 40} 820 Z" fill="#FFFFFF" opacity=".08"/>`).join('');
+    const still = `<rect width="1200" height="800" fill="${water}"/>${rays}<g filter="${rough()}">`
+      + `<path d="${reef.d}" fill="${lin('ml-reef', [[0, '#5AA6C9'], [1, '#3F8AB5']])}" stroke="#3A7EA8" stroke-width="3" opacity=".75"/>`
+      + coral(1080, reef.at(1080) + 30, 0.9, '#F39BB0') + coral(250, reef.at(250) + 34, 0.7, '#FFB37A')
+      + `<path d="${sand.d}" fill="${lin('ml-sand', [[0, '#F8E6BC'], [0.7, '#E6C690']])}" stroke="#C9A36A" stroke-width="3"/>`
+      + strokes(119, 30, 0, 1200, 690, 796, '#D9B57E', 0.5, 'q8 -4 16 0')
+      + coral(1150, 700, 1.1, '#EF7A96') + coral(70, 706, 0.9, '#B795F0')
+      + starfish(330, 742, 20, '#FF9E6A') + starfish(900, 760, 16, '#F7C948')
+      + `<path d="M620 770 q14 -26 28 0 Z" ${P('#FFE2EA', 2)}/><path d="M626 770 l8 -18 M634 770 v-20 M642 770 l-8 -18" ${L('#E496AA', 1.6)}/>`
+      + `<ellipse cx="780" cy="716" rx="44" ry="22" ${P('#9AA7BE', 2.6)}/><ellipse cx="740" cy="728" rx="28" ry="16" ${P('#B6C0D2', 2.4)}/></g>`;
+    const r = rng(127);
+    let bubbles = '';
+    for (let k = 0; k < 14; k++) {
+      const s = 6 + r() * 12;
+      bubbles += `<g transform="translate(${(40 + r() * 1120).toFixed(0)} ${(560 + r() * 220).toFixed(0)})"><g class="bub" style="animation-duration:${(10 + r() * 8).toFixed(1)}s;animation-delay:${(-r() * 16).toFixed(1)}s"><circle r="${s.toFixed(1)}" fill="#FFFFFF" fill-opacity=".25" stroke="#E6F7FC" stroke-width="2"/><circle cx="${(-s * 0.35).toFixed(1)}" cy="${(-s * 0.35).toFixed(1)}" r="${(s * 0.22).toFixed(1)}" fill="#fff"/></g></g>`;
+    }
+    const fish = [[150, '#FFB547', 0.9, 38], [270, '#F78FA7', 0.7, 46], [420, '#7FD1AE', 0.8, 52], [110, '#9FB8F5', 0.6, 60]]
+      .map(([y, c, s, d], k) => swimmer(y, fishArt(c, s), k, d)).join('');
+    const live = [[40, 680, 120], [180, 700, 90], [470, 690, 110], [990, 700, 130], [1110, 690, 90]].map(([x, y, hh], k) => weed(x, y, hh, k)).join('') + fish + bubbles;
+    return scene(still, live);
+  },
+  space: () => {
+    const sky = lin('ml-space', [[0, '#141A44'], [0.55, '#2A2A68'], [1, '#4A3F88']]);
+    const neb = (x, y, rx, ry, c, id) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${rad(id, [[0, c, 0.42], [1, c, 0]])}"/>`;
+    const ground = hill(668, 18, 131);
+    const crater = (x, y, s) => `<ellipse cx="${x}" cy="${y}" rx="${30 * s}" ry="${10 * s}" fill="#7E77AE" stroke="#6A6399" stroke-width="2.4"/><ellipse cx="${x + 3 * s}" cy="${y + 2 * s}" rx="${22 * s}" ry="${6 * s}" fill="#948DC2"/>`;
+    const ringed = `<g transform="translate(170 220)"><ellipse cx="0" cy="0" rx="118" ry="26" fill="none" stroke="#F7D49A" stroke-width="10" transform="rotate(-16)" opacity=".8"/><circle r="70" ${P('#F2A9C4', 3)}/><path d="M-66 -18 Q0 -6 66 -24 M-70 10 Q0 22 68 4 M-58 36 Q0 46 54 32" ${L('#E68AAE', 6)} opacity=".7"/><path d="M-118 26 A118 26 0 0 0 118 -26" transform="rotate(-16)" fill="none" stroke="#F7D49A" stroke-width="10"/></g>`;
+    const earth = `<g transform="translate(1030 300)"><circle r="40" ${P('#79B8F0', 2.6)}/><path d="M-24 -20 Q-8 -30 4 -18 Q0 -4 -16 -2 Q-30 -6 -24 -20 Z M8 8 Q24 2 30 16 Q20 30 6 24 Z" fill="#8CCB6E"/><ellipse cx="-12" cy="-16" rx="10" ry="6" fill="#fff" opacity=".35"/></g>`;
+    const still = `<rect width="1200" height="800" fill="${sky}"/>${neb(380, 200, 340, 160, '#B37BE6', 'ml-neb1')}${neb(880, 420, 300, 140, '#5FC6D8', 'ml-neb2')}${neb(620, 80, 260, 90, '#F28DB2', 'ml-neb3')}`
+      + `${ringed}${earth}<g filter="${rough()}"><path d="${ground.d}" fill="${lin('ml-moonland', [[0, '#C3BDE3'], [0.7, '#9F98CC']])}" stroke="#7E77AE" stroke-width="3"/>`
+      + crater(320, 720, 1.2) + crater(760, 752, 0.9) + crater(1040, 712, 1.1) + crater(540, 700, 0.6) + '</g>';
+    const shoot = `<g class="shoot"><path d="M0 0 L-90 -40" stroke="#FFF6DA" stroke-width="4" stroke-linecap="round" opacity=".8"/><circle r="5" fill="#FFF6DA"/></g>`;
+    const live = starField(137, 70, 10, 1190, 10, 640) + `<g transform="translate(300 60)">${shoot}</g>` + swimmer(150, `<g transform="scale(.9)">${rocket}</g>`, 1, 44);
+    return scene(still, live);
+  },
+  forest: () => meadow({
+    id: 'forest',
+    seed: 141,
+    sun: [1000, 110],
+    pal: {
+      far: ['#A9CFA0', '#8DBB86', '#74A46E'], mid: ['#86BD72', '#6FA75C', '#4F8A40'], ground: ['#93C470', '#74AA56', '#4E8A3E'],
+      ftree: [['#7DB077', '#5E915A', '#7A6450'], ['#94C489', '#6E9E64', '#7A6450'], ['#6FA46E', '#4F8550', '#7A6450']],
+    },
+    farTrees: [[60, 0.55], [190, 0.45], [330, 0.6], [470, 0.42], [610, 0.52], [760, 0.46], [900, 0.58], [1040, 0.44], [1170, 0.56]],
+    clouds: [[420, 70, 0.6], [760, 140, 0.45]],
+    trees: [[60, 660, 1.55, false], [1150, 670, 1.45, false], [270, 640, 0.75, false]],
+    groundExtra: mush(360, 706, 0.9, '#EF5D6C') + mush(410, 724, 0.6, '#F6A15A') + mush(860, 712, 0.8, '#B795F0') + mush(1010, 740, 0.7, '#EF5D6C') + mush(560, 760, 0.55, '#F6A15A'),
+    flowers: [[150, 768, 38, 'lilac'], [505, 724, 40, 'white'], [700, 760, 36, 'yellow'], [940, 772, 40, 'pink']],
+    bflyC: ['#CDB8EC', '#F5C8E0', '#9479BE'],
+  }),
+  candy: () => meadow({
+    id: 'candy',
+    seed: 151,
+    sun: [1020, 120],
+    pal: {
+      far: ['#FBD6E4', '#F5B8CF', '#DC93AE'], mid: ['#CDF1E0', '#A8E2C9', '#7CC4A4'], ground: ['#FFF1D6', '#F8DBAA', '#DDB57A'],
+      ftree: [['#F7B6D2', '#DB8FB0', '#F2D6B8'], ['#B9E6F5', '#8CC6DD', '#F2D6B8'], ['#D9C6F5', '#B09AD8', '#F2D6B8']],
+    },
+    farTrees: [[140, 0.5], [420, 0.44], [690, 0.5], [960, 0.46]],
+    trees: [],
+    tufts: [],
+    flowers: [],
+    groundExtra: cane(250, 712, 0.9, false) + cane(1180, 740, 0.8, true) + gumdrop(420, 742, 0.9, '#F78FA7') + gumdrop(470, 760, 0.7, '#8FD0F2') + gumdrop(800, 752, 0.8, '#B795F0') + gumdrop(980, 770, 0.75, '#FFC95C') + gumdrop(640, 780, 0.6, '#7FD1AE'),
+    live: swayAt(80, 690, 1.1, lolly('#F78FA7', '#FFFFFF'), 1, 'tree') + swayAt(1110, 680, 1.05, lolly('#8FD0F2', '#FFFFFF'), 2, 'tree') + swayAt(1010, 720, 0.6, lolly('#FFC95C', '#F78FA7'), 3, 'tree'),
+    bflyC: ['#FFD0E0', '#FFE7A0', '#D98AA6'],
+  }),
+});
+
 export const PLACE_COLOR = {
   sky: '#AED6E8', choose: '#AED6E8', farm: '#AED6E8', orchard: '#AED6E8', kitchen: '#F6E0BC', playroom: '#DCE4FB',
   mirror: '#D3EDF6', table: '#EBC591', baskets: '#FADCD2', country: '#A3D07F', night: '#232850',
-  beach: '#5DB3D6', park: '#D58A60',
+  beach: '#5DB3D6', park: '#D58A60', sea: '#4C9FCB', space: '#2A2A68', forest: '#A9CFA0', candy: '#FBD6E4',
 };
-export const placeSVG = (name) => PLACE[name]();
+// Draw a place in a mood ({ time, weather }); without one, the real time of day.
+export function placeSVG(name, mood = clockMood()) {
+  const kind = OUT.has(name) ? 'out' : IN.has(name) ? 'in' : 'none';
+  MOOD = { time: kind === 'none' ? 'day' : mood.time, weather: kind === 'out' ? mood.weather : null, kind };
+  return PLACE[name]();
+}
+// The page colour around the stage for a place in a mood.
+export const placeColor = (name, mood) => (OUT.has(name) && mood && mood.time === 'night' ? '#2B3062' : OUT.has(name) && mood && mood.time === 'evening' ? '#D9A5B8' : PLACE_COLOR[name] || PLACE_COLOR.sky);
 
 // ---------------------------------------------------------------- treasure chest
 // Drawn in a 200 x 120 box. open: lid up with gold inside; locked: a padlock on the front.
@@ -851,6 +1073,22 @@ export const CARD_ART = {
   treasure: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><ellipse cx="100" cy="112" rx="84" ry="8" fill="#5A3E22" opacity=".18"/>${chestSVGInner({ open: true })}</svg>`,
   race: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><rect x="4" y="40" width="192" height="76" rx="10" ${P('#E39A6E', 2.6)}/><path d="M8 66 H192 M8 92 H192" ${L('#FFF6E4', 3)} stroke-dasharray="12 8"/>${[0, 1, 2, 3, 4, 5].map((r) => `<rect x="${158 + (r % 2) * 9}" y="${42 + r * 12.3}" width="9" height="12.3" fill="#3A3A48"/>`).join('')}<path d="M150 40 V6" ${L('#8A6A4A', 3.4)}/><path d="M150 8 L182 16 L150 26 Z" ${P('#EF476F', 2.2)}/>${[['#2EC4B6', 60, 58], ['#A06CF0', 96, 84], ['#FF9542', 40, 108]].map(([c, x, y]) => `<circle cx="${x}" cy="${y - 10}" r="11" ${P(c, 2.2)}/><circle cx="${x - 4}" cy="${y - 12}" r="2.4" fill="#2B2240"/><circle cx="${x + 4}" cy="${y - 12}" r="2.4" fill="#2B2240"/><path d="M${x - 28} ${y - 14} h12 M${x - 30} ${y - 6} h14" ${L('#FFF6E4', 3)}/>`).join('')}</svg>`,
   train: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><path d="M6 108 H194" ${L('#A87850', 4)}/><path d="M14 112 V104 M44 112 V104 M74 112 V104 M104 112 V104 M134 112 V104 M164 112 V104" ${L('#A87850', 3)}/><rect x="36" y="44" width="70" height="46" rx="10" ${P('#E85D6A', 2.6)}/><rect x="96" y="24" width="56" height="66" rx="10" ${P('#4C8DF0', 2.6)}/><rect x="108" y="34" width="32" height="24" rx="6" fill="${grad('#DDF3FF')}" stroke="${lineOf('#4C8DF0')}" stroke-width="2.4"/><rect x="48" y="22" width="18" height="24" rx="4" ${P('#5A5468', 2.6)}/><circle cx="57" cy="12" r="7" fill="#fff" opacity=".8"/><circle cx="68" cy="4" r="5" fill="#fff" opacity=".6"/>${[60, 96, 134].map((x) => `<circle cx="${x}" cy="96" r="13" ${P('#FFD166', 2.6)}/><circle cx="${x}" cy="96" r="4" fill="${lineOf('#FFD166')}"/>`).join('')}</svg>`,
+  memory: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><rect x="22" y="18" width="70" height="88" rx="12" transform="rotate(-8 57 62)" ${P('#9B7BE0', 2.6)}/><path d="${starPath(57, 62, 18, 8)}" fill="#E6DAFF" transform="rotate(-8 57 62)"/><rect x="104" y="14" width="74" height="92" rx="12" transform="rotate(6 141 60)" ${P('#FFFBF2', 2.6)}/><g transform="translate(108 22) scale(.66) rotate(6 50 50)">${PIC.cat()}</g></svg>`,
+  pattern: () => `<svg viewBox="0 0 220 120" width="100%" height="100%" aria-hidden="true"><circle cx="30" cy="60" r="20" ${P('#EF476F', 2.6)}/><rect x="62" y="40" width="40" height="40" rx="6" ${P('#3A86FF', 2.6)}/><circle cx="134" cy="60" r="20" ${P('#EF476F', 2.6)}/><rect x="166" y="38" width="44" height="44" rx="10" fill="#FFFBF2" stroke="#C9952C" stroke-width="3" stroke-dasharray="7 6"/>${numTxt(188, 72, '?')}</svg>`,
+  odd: () => `<svg viewBox="0 0 220 120" width="100%" height="100%" aria-hidden="true">${[[0, 'apple'], [70, 'apple'], [140, 'duck']].map(([x, n], i) => `<g transform="translate(${x + 6} ${i === 2 ? 4 : 14}) scale(${i === 2 ? 0.8 : 0.66})">${PIC[n]()}</g>`).join('')}<circle cx="182" cy="44" r="40" fill="none" stroke="#FFCF4D" stroke-width="5"/></svg>`,
+  clock: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><circle cx="100" cy="60" r="54" ${P('#FFCF4D', 2.6)}/><circle cx="100" cy="60" r="46" fill="#FFFBF2"/>${[0, 90, 180, 270].map((a) => `<circle cx="${100 + Math.sin(a * Math.PI / 180) * 38}" cy="${60 - Math.cos(a * Math.PI / 180) * 38}" r="4" fill="#E85D6A"/>`).join('')}<path d="M100 60 L100 26" stroke="#E85D6A" stroke-width="5" stroke-linecap="round"/><path d="M100 60 L124 60" stroke="#3B6FD6" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="60" r="5" fill="#5A4632"/></svg>`,
+  mix: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><path d="M40 70 Q44 112 100 112 Q156 112 160 70 Z" ${P('#E7F2FA', 2.6)}/><ellipse cx="100" cy="72" rx="58" ry="11" fill="#FF9542"/><g transform="rotate(-35 46 30)"><rect x="26" y="10" width="40" height="44" rx="6" ${P('#EF476F', 2.4)}/></g><g transform="rotate(35 154 30)"><rect x="134" y="10" width="40" height="44" rx="6" ${P('#FFD166', 2.4)}/></g><path d="M74 46 Q80 58 82 66 M126 46 Q120 58 118 66" stroke="#EF476F" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M126 46 Q120 58 118 66" stroke="#FFD166" stroke-width="5" stroke-linecap="round" fill="none"/></svg>`,
+  letters: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true">${[['A', 20, '#E85D6A', -8], ['B', 76, '#4C8DF0', 4], ['C', 132, '#3FB58A', -4]].map(([t, x, c, r]) => `<g transform="rotate(${r} ${x + 24} 60)"><rect x="${x}" y="30" width="48" height="58" rx="10" ${P('#FFFBF2', 2.4)}/><text x="${x + 24}" y="76" text-anchor="middle" font-family="Fredoka, system-ui, sans-serif" font-size="40" font-weight="700" fill="${c}">${t}</text></g>`).join('')}</svg>`,
+  shadow: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><g transform="translate(14 14) scale(.86)">${PIC.cat()}</g><path d="M96 60 h14 m-6 -6 l6 6 -6 6" stroke="#8A6A4A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><g transform="translate(112 14) scale(.86)" style="filter:brightness(0)" opacity=".72">${PIC.cat()}</g></svg>`,
+  maze: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><rect x="30" y="8" width="140" height="104" rx="8" fill="#F3E2BE"/><path d="M30 8 H170 V112 H30 Z M65 8 V60 M100 34 V112 M135 8 V78 M30 86 H66 M135 78 H100" stroke="#4E8F3E" stroke-width="7" stroke-linecap="round" fill="none"/><circle cx="47" cy="26" r="10" ${P('#2EC4B6', 2)}/><path d="${starPath(152, 96, 11, 5)}" ${P('#FFD43B', 2)}/></svg>`,
+  puzzle: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><rect x="20" y="12" width="100" height="96" rx="8" fill="#CFE9F7" stroke="#8A6A4A" stroke-width="3"/><g transform="translate(26 14) scale(.9)">${PIC.car()}</g><path d="M70 12 V108 M20 60 H120" stroke="#8A6A4A" stroke-width="2.4" stroke-dasharray="6 5"/><g transform="translate(134 30) rotate(12)"><rect width="50" height="48" rx="6" fill="#CFE9F7" stroke="#8A6A4A" stroke-width="3"/></g></svg>`,
+  // Paket 5
+  shop: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><g transform="translate(10 6) scale(.9)">${PIC.cake()}</g><rect x="64" y="70" width="44" height="30" rx="8" ${P('#FFFBF2', 2.4)}/>${numTxt(86, 94, 3)}${[[140, 84, 22], [172, 60, 18], [150, 40, 16]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" ${P('#FFD43B', 2.4)}/><circle cx="${x}" cy="${y}" r="${r * 0.66}" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>`).join('')}</svg>`,
+  scale: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><path d="M94 30 H106 L110 108 H90 Z" ${P('#B98A5E', 2.4)}/><rect x="66" y="104" width="68" height="12" rx="5" ${P('#9C6E45', 2.4)}/><g transform="rotate(12 100 30)"><rect x="20" y="25" width="160" height="10" rx="5" ${P('#C9925F', 2.4)}/></g><path d="M22 14 L6 44 M22 14 L38 44 M178 48 L162 78 M178 48 L194 78" stroke="#8A6A4A" stroke-width="2"/><path d="M2 44 H42 Q40 54 22 54 Q4 54 2 44 Z M158 78 H198 Q196 88 178 88 Q160 88 158 78 Z" ${P('#9FB4C8', 2)}/><g transform="translate(10 22) scale(.24)">${PIC.balloon()}</g><g transform="translate(154 42) scale(.42)">${PIC.cat()}</g><circle cx="100" cy="30" r="7" ${P('#FFD166', 2)}/></svg>`,
+  opposites: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><g transform="translate(6 10) scale(1)">${PIC.ball()}</g><g transform="translate(124 54) scale(.5)">${PIC.ball('#3A86FF')}</g><path d="M104 60 h18 M104 60 l8 -8 M104 60 l8 8 M122 60 l-8 -8 M122 60 l-8 8" stroke="#8A6A4A" stroke-width="3.4" stroke-linecap="round" fill="none"/></svg>`,
+  story: () => `<svg viewBox="0 0 210 120" width="100%" height="100%" aria-hidden="true">${[0, 1, 2].map((k) => `<rect x="${6 + k * 68}" y="22" width="62" height="70" rx="10" ${P('#FFFBF2', 2.4)}/>${numTxt(37 + k * 68, 114, k + 1)}`).join('')}<ellipse cx="37" cy="62" rx="16" ry="21" ${P('#FFF4E2', 2.2)}/><path d="M23 60 L29 55 L34 61 L40 54 L45 61 L51 56" fill="none" stroke="#8A6A4A" stroke-width="2"/><ellipse cx="105" cy="64" rx="16" ry="21" ${P('#FFF4E2', 2.2)}/><circle cx="105" cy="48" r="10" ${P('#FFD84D', 2)}/><ellipse cx="173" cy="66" rx="15" ry="13" ${P('#FFD84D', 2.2)}/><circle cx="173" cy="46" r="10" ${P('#FFD84D', 2)}/><path d="M170 50 L176 50 L173 55 Z M102 52 L108 52 L105 57 Z" fill="#FF9F45"/></svg>`,
+  feelings: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><svg x="2" y="8" width="104" height="104" viewBox="0 0 100 100" style="overflow:visible">${faceInner('happy', 'moko')}</svg><svg x="96" y="8" width="104" height="104" viewBox="0 0 100 100" style="overflow:visible">${faceInner('sad', 'gumi')}</svg></svg>`,
+  simon: () => `<svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true"><svg x="4" y="6" width="110" height="110" viewBox="0 0 100 100" style="overflow:visible">${faceInner('happy', 'tobi')}</svg><path d="M120 14 H192 Q198 14 198 20 V50 Q198 56 192 56 H140 L128 68 L130 56 H120 Q114 56 114 50 V20 Q114 14 120 14 Z" ${P('#FFFBF2', 2.4)}/><path d="M138 36 L148 26 V46 Z M152 28 Q158 36 152 44 M160 22 Q170 36 160 50" stroke="#8A6A4A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M150 104 L150 76 Q150 70 156 70 Q162 70 162 76 V92 M162 88 Q162 82 168 82 Q174 82 174 88 V96 Q174 112 158 112 Q146 112 142 102 L136 90 Q134 84 140 84 Q144 84 146 88 L150 94" ${P('#FFD9B8', 2.4)}/></svg>`,
 };
 
 // ---------------------------------------------------------------- train parts
